@@ -59,26 +59,31 @@ class InstallTanzaAdmin extends Command
 
     protected function reloadEnvironment()
     {
-        // Clear cached config
         Artisan::call('config:clear');
         
-        // Reload .env manually
-        Dotenv::createImmutable(base_path())->safeLoad();
-        
-        // Verify environment variables
+        // Clear loaded environment
+        (new \Dotenv\Dotenv(
+            \Dotenv\Repository\RepositoryBuilder::createWithNoAdapters()
+                ->addAdapter(\Dotenv\Repository\Adapter\EnvConstAdapter::class)
+                ->addWriter(\Dotenv\Repository\Adapter\PutenvAdapter::class)
+                ->immutable()
+                ->make()
+        ))->load(base_path('.env'));
+    
+        // Verify using getenv() instead of env()
         $this->info("\n🔍 Verifying environment variables:");
         $this->table(
             ['Key', 'Value'],
             [
-                ['DB_HOST', env('DB_HOST')],
-                ['DB_PORT', env('DB_PORT')],
-                ['DB_DATABASE', env('DB_DATABASE')],
-                ['DB_USERNAME', env('DB_USERNAME')],
-                ['DB_PASSWORD', str_repeat('*', strlen(env('DB_PASSWORD')))],
+                ['DB_HOST', getenv('DB_HOST')],
+                ['DB_PORT', getenv('DB_PORT')],
+                ['DB_DATABASE', getenv('DB_DATABASE')],
+                ['DB_USERNAME', getenv('DB_USERNAME')],
+                ['DB_PASSWORD', str_repeat('*', strlen(getenv('DB_PASSWORD') ?? ''))],
             ]
         );
     
-        if (empty(env('DB_USERNAME')) || empty(env('DB_DATABASE'))) {
+        if (empty(getenv('DB_USERNAME')) || empty(getenv('DB_DATABASE'))) {
             $this->error('❌ Database configuration is incomplete!');
             exit(1);
         }
@@ -87,27 +92,36 @@ class InstallTanzaAdmin extends Command
     protected function updateEnvVariables(array $variables)
     {
         $envPath = base_path('.env');
-        $envContent = File::get($envPath);
-
+        $envContent = File::exists($envPath) ? File::get($envPath) : File::get(base_path('.env.example'));
+    
         foreach ($variables as $key => $value) {
             $value = $this->formatEnvValue($value);
-            $envContent = preg_replace(
-                "/^{$key}=.*/m",
-                "{$key}={$value}",
-                $envContent
-            );
+            $pattern = "/^{$key}=.*/m";
+            
+            if (preg_match($pattern, $envContent)) {
+                // Replace existing value
+                $envContent = preg_replace($pattern, "{$key}={$value}", $envContent);
+            } else {
+                // Append new value
+                $envContent .= "\n{$key}={$value}";
+            }
         }
-
+    
         File::put($envPath, $envContent);
         $this->info('✅ Environment variables updated');
     }
-
+    
     protected function formatEnvValue($value)
     {
-        if (empty($value)) return 'null';
-        if (preg_match('/\s/', $value)) return '"'.$value.'"';
+        if ($value === null || $value === '') {
+            return '';
+        }
+        if (preg_match('/\s|#/', $value)) {
+            return '"'.trim($value).'"';
+        }
         return $value;
     }
+
 
     protected function installDependencies()
     {
