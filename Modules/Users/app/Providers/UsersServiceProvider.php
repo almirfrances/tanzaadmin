@@ -4,6 +4,7 @@ namespace Modules\Users\Providers;
 
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Blade;
 use Modules\Users\Models\SocialLogin;
 use Illuminate\Support\Facades\Config;

@@ -208,7 +208,7 @@ class InstallTanzaAdmin extends Command
         $this->info("\n🚀 Installation Complete!");
         $this->line("Admin URL: " . url('/admin'));
         $this->line("Username: admin");
-        $this->line("Password: tanzaadmin");
+        $this->line("Password: tanzahost");
         $this->line("\n👉 Next steps:");
         $this->line("1. php artisan serve");
         $this->line("2. npm install && npm run dev");
