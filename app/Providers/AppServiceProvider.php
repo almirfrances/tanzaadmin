@@ -9,7 +9,6 @@ use App\Providers\EmailService;
 use Illuminate\Mail\MailManager;
 use Nwidart\Modules\Facades\Module;
 use Illuminate\Support\Facades\View;
-use Modules\Settings\Models\Setting;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -32,48 +31,80 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Avoiding DB connection check if database is not yet configured
+        // Skip database operations if .env is not configured
+        if (!$this->isDatabaseConfigured()) {
+            Log::warning('Database configuration is incomplete. Skipping database checks.');
+            return;
+        }
+
         try {
-            // Check if the Settings module is active and ensure the database is connected
-            if (DB::connection()->getDatabaseName()) {
-                $settingsModule = AdminModule::where('name', 'Settings')->where('status', 1)->exists();
+            // Check database connection and settings module
+            DB::connection()->getPdo(); // Actively check connection
 
-                if ($settingsModule) {
-                    try {
-                        // Load settings from the database
-                        $this->settings = Setting::pluck('value', 'key')->toArray();
-
-                        // Share settings with all views
-                        View::share('settings', $this->settings);
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to load settings', ['error' => $e->getMessage()]);
-                    }
-                }
+            if (AdminModule::where('name', 'Settings')->where('status', 1)->exists()) {
+                $this->loadAndShareSettings();
             }
+
+            // Additional module checks
+            $this->handleEmailService();
+            $this->handleHttpsEnforcement();
+            
         } catch (\Exception $e) {
-            // Log an error if the database connection is not configured yet
-            \Log::warning('Database connection not configured or failed: ' . $e->getMessage());
+            Log::error('Database connection failed: ' . $e->getMessage());
         }
 
-        // Check if the Email module is active and bind EmailService
+        // Register Blade directives
+        $this->registerBladeDirectives();
+    }
+
+    /**
+     * Check if database environment variables are configured
+     */
+    protected function isDatabaseConfigured(): bool
+    {
+        return !empty(env('DB_DATABASE')) &&
+               !empty(env('DB_USERNAME')) &&
+               !empty(env('DB_PASSWORD'));
+    }
+
+    /**
+     * Load and share settings with views
+     */
+    protected function loadAndShareSettings(): void
+    {
+        try {
+            $settings = Setting::pluck('value', 'key')->toArray();
+            View::share('settings', $settings);
+        } catch (\Exception $e) {
+            Log::error('Failed to load settings', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle email service registration
+     */
+    protected function handleEmailService(): void
+    {
         if (AdminModule::isModuleEnabled('Email')) {
-            $this->app->singleton(EmailService::class, function ($app) {
-                return new EmailService();
-            });
+            $this->app->singleton(EmailService::class, fn () => new EmailService());
         }
+    }
 
-        // Enforce HTTPS if the Settings module is active and force_https is enabled
-        if (AdminModule::isModuleEnabled('Settings')) {
-            $forceHttps = Setting::where('key', 'force_https')->value('value');
-
-            if ($forceHttps) {
-                Route::middlewareGroup('web', [
-                    ForceHttpsMiddleware::class,
-                ]);
-            }
+    /**
+     * Handle HTTPS enforcement
+     */
+    protected function handleHttpsEnforcement(): void
+    {
+        if (AdminModule::isModuleEnabled('Settings') && Setting::where('key', 'force_https')->value('value')) {
+            Route::pushMiddlewareToGroup('web', ForceHttpsMiddleware::class);
         }
+    }
 
-        // Register Blade directive for checking module availability and status
+    /**
+     * Register Blade directives
+     */
+    protected function registerBladeDirectives(): void
+    {
         Blade::directive('isModule', function ($moduleName) {
             return "<?php if (\\App\\Models\\AdminModule::isModuleEnabled($moduleName)): ?>";
         });
