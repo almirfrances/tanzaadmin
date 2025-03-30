@@ -103,7 +103,7 @@ php artisan tanzaadmin:install --force
 - **Issues:** [https://github.com/almirfrances/tanzaadmin/issues](https://github.com/almirfrances/tanzaadmin/issues)  
 
 ## Version Info
-- **Current Stable:** 1.0.8  
+- **Current Stable:** 1.2.0  
 - **PHP Required:** 8.1+  
 - **Laravel Version:** 10.x  
 - **Database:** MySQL 5.7+ / MariaDB 10.3+  
