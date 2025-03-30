@@ -1,0 +1,14 @@
+{
+    "name": "Ticket",
+    "alias": "ticket",
+    "version": "1.0.0",
+    "status": 1,
+    "author": "Almir Frances",
+    "author_url": "https://almirfrances.com",
+    "description": "A module for managing support tickets.",
+    "keywords": ["ticket", "support", "module"],
+    "providers": [
+        "Modules\\Ticket\\Providers\\TicketServiceProvider"
+    ],
+    "files": []
+}
