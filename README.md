@@ -1,10 +1,16 @@
 # TanzaAdmin Installation Documentation
 
 ## One-Step Installation
-Run this single command to create the project and complete installation:
+Run these commands to create the project and complete installation:
 
 ```
 composer create-project almirfrances/tanzaadmin
+```
+```
+cd tanzaadmin
+```
+```
+php artisan tanzaadmin:install
 ```
 
 The process will:
@@ -34,7 +40,7 @@ After successful installation:
    php artisan serve
    ```
 
-2. Build frontend assets: Optional   
+2. Build frontend assets:  
    ```
    npm install && npm run dev
    ```
@@ -43,7 +49,7 @@ After successful installation:
 **Default credentials:**  
 - **URL:** [http://localhost:8000/admin](http://localhost:8000/admin)  
 - **Username:** admin  
-- **Password:** tanzahost  
+- **Password:** tanzaadmin  
 
 ## Configuration
 Edit `.env` file for:
@@ -97,7 +103,7 @@ php artisan tanzaadmin:install --force
 - **Issues:** [https://github.com/almirfrances/tanzaadmin/issues](https://github.com/almirfrances/tanzaadmin/issues)  
 
 ## Version Info
-- **Current Stable:** 1.1.2  
+- **Current Stable:** 1.0.8  
 - **PHP Required:** 8.1+  
 - **Laravel Version:** 10.x  
 - **Database:** MySQL 5.7+ / MariaDB 10.3+  
