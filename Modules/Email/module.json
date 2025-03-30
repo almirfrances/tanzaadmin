@@ -1,0 +1,15 @@
+{
+    "name": "Email",
+    "alias": "email",
+    "version": "1.0.0",
+    "status": 0,
+    "author": "Almir Frances",
+    "author_url": "https://almirfrances.com",
+    "description": "This module provides advanced settings for email and notifications.",
+    "keywords": ["settings", "management", "emails"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Email\\Providers\\EmailServiceProvider"
+    ],
+    "files": []
+}
