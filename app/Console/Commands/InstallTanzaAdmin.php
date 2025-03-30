@@ -5,69 +5,120 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Config;
 
 class InstallTanzaAdmin extends Command
 {
     protected $signature = 'tanzaadmin:install';
-    protected $description = 'Install and set up TanzaAdmin';
+    protected $description = 'Install TanzaAdmin with proper dependency handling';
 
     public function handle()
     {
-        $this->info('Starting TanzaAdmin installation...');
-
-        // Run composer install to ensure vendor is installed
-        $this->info('Installing Composer dependencies...');
-        $composerInstall = shell_exec('composer install');
-        if (!$composerInstall) {
-            $this->error('Failed to install Composer dependencies.');
+        if ($this->alreadyInstalled()) {
+            $this->info('TanzaAdmin is already installed!');
             return;
         }
-        $this->info('Composer dependencies installed successfully.');
 
-        // Ask for database details
-        $dbHost = $this->ask('Enter Database Host', '127.0.0.1');
-        $dbName = $this->ask('Enter Database Name', 'tanzaadmin');
-        $dbUser = $this->ask('Enter Database Username', 'root');
-        $dbPass = $this->secret('Enter Database Password (leave blank for none)');
+        $this->setupEnvironment();
+        $this->installDependencies();
+        $this->finalizeInstallation();
+    }
 
-        // Update .env file
-        $envPath = base_path('.env');
-        if (!File::exists($envPath)) {
-            File::copy(base_path('.env.example'), $envPath);
-        }
+    protected function alreadyInstalled(): bool
+    {
+        return File::exists(base_path('.env')) && 
+               Config::get('app.key') && 
+               !empty(env('DB_DATABASE'));
+    }
 
-        $envContent = File::get($envPath);
-        $envContent = preg_replace("/DB_HOST=.*/", "DB_HOST={$dbHost}", $envContent);
-        $envContent = preg_replace("/DB_DATABASE=.*/", "DB_DATABASE={$dbName}", $envContent);
-        $envContent = preg_replace("/DB_USERNAME=.*/", "DB_USERNAME={$dbUser}", $envContent);
-        $envContent = preg_replace("/DB_PASSWORD=.*/", "DB_PASSWORD={$dbPass}", $envContent);
-        File::put($envPath, $envContent);
+    protected function setupEnvironment()
+    {
+        // Get database credentials
+        $dbHost = $this->ask('Database Host', '127.0.0.1');
+        $dbName = $this->ask('Database Name', 'tanzaadmin');
+        $dbUser = $this->ask('Database Username', 'root');
+        $dbPass = $this->secret('Database Password (blank for none)');
 
-        // Clear config cache to apply new DB settings
+        // Create .env file
+        $this->createEnvFile([
+            'DB_HOST' => $dbHost,
+            'DB_DATABASE' => $dbName,
+            'DB_USERNAME' => $dbUser,
+            'DB_PASSWORD' => $dbPass
+        ]);
+
+        // Clear configuration cache
         Artisan::call('config:clear');
+        sleep(2); // Allow time for env refresh
+    }
 
-        // Import tanzaadmin.sql dump
-        $sqlFile = public_path('tanzaadmin.sql');
-        if (File::exists($sqlFile)) {
-            $this->info('Importing database...');
-            $command = "mysql -h {$dbHost} -u {$dbUser} " . ($dbPass ? "-p{$dbPass} " : "") . "{$dbName} < {$sqlFile}";
-            system($command);
-            $this->info('Database imported successfully.');
-        } else {
-            $this->warn('No database.sql file found. Skipping import.');
+    protected function createEnvFile(array $variables)
+    {
+        $envExample = File::get(base_path('.env.example'));
+        foreach ($variables as $key => $value) {
+            $envExample = preg_replace(
+                "/^{$key}=.*/m",
+                "{$key}={$value}",
+                $envExample
+            );
         }
+        File::put(base_path('.env'), $envExample);
+    }
 
-        // Generate application key
-        Artisan::call('key:generate');
+    protected function installDependencies()
+    {
+        $this->info('Installing Composer dependencies...');
+        
+        // Install without triggering scripts
+        $this->runShellCommand('composer install --no-interaction --no-scripts');
+        
+        $this->info('Updating Composer dependencies...');
+        $this->runShellCommand('composer update --no-interaction --no-scripts');
+        
+        // Manually run critical post-install commands
+        $this->info('Running package discovery...');
+        Artisan::call('package:discover');
+    }
 
-        // Finalize setup
+    protected function runShellCommand(string $command)
+    {
+        $output = null;
+        $status = null;
+        exec($command, $output, $status);
+        
+        if ($status !== 0) {
+            $this->error('Command failed: ' . $command);
+            $this->line(implode("\n", $output));
+            exit(1);
+        }
+    }
+
+    protected function finalizeInstallation()
+    {
+        $this->importDatabase();
+        Artisan::call('key:generate --force');
         Artisan::call('storage:link');
-        Artisan::call('cache:clear');
+        Artisan::call('optimize:clear');
 
-        // Print admin credentials
         $this->info("\nTanzaAdmin installed successfully! 🎉");
         $this->info("Admin URL: " . url('/admin'));
         $this->info("Username: admin");
         $this->info("Password: tanzaadmin");
+    }
+
+    protected function importDatabase()
+    {
+        $sqlFile = public_path('tanzaadmin.sql');
+        if (File::exists($sqlFile)) {
+            $this->info('Importing database...');
+            $this->runShellCommand(sprintf(
+                'mysql -h %s -u %s %s %s < %s',
+                escapeshellarg(env('DB_HOST')),
+                escapeshellarg(env('DB_USERNAME')),
+                env('DB_PASSWORD') ? '-p' . escapeshellarg(env('DB_PASSWORD')) : '',
+                escapeshellarg(env('DB_DATABASE')),
+                escapeshellarg($sqlFile)
+            ));
+        }
     }
 }
