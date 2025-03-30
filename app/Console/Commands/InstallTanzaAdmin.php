@@ -24,23 +24,24 @@ class InstallTanzaAdmin extends Command
     protected function showHeader()
     {
         $this->info("
-            ████████╗ █████╗ ███╗   ██╗███████╗ █████╗ 
-            ╚══██╔══╝██╔══██╗████╗  ██║╚══███╔╝██╔══██╗
-               ██║   ███████║██╔██╗ ██║  ███╔╝ ███████║
-               ██║   ██╔══██║██║╚██╗██║ ███╔╝  ██╔══██║
-               ██║   ██║  ██║██║ ╚████║███████╗██║  ██║
-               ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
-        ");
+    ████████╗  █████╗  ███╗  ██╗ ███████╗  █████╗   █████╗  ██████╗ ███╗   ███╗██╗███╗   ██╗
+    ╚══██╔══╝ ██╔══██╗ ████╗ ██║ ╚══███╔╝ ██╔══██╗ ██╔══██╗██╔════╝ ████╗ ████║██║████╗  ██║
+       ██║    ███████║ ██╔██╗██║   ███╔╝  ███████║ ██║  ██║██║  ███╗██╔████╔██║██║██╔██╗ ██║
+       ██║    ██╔══██║ ██║╚██╗██║  ███╔╝   ██╔══██║ ██║  ██║██║   ██║██║╚██╔╝██║██║██║╚██╗██║
+       ██║    ██║  ██║ ██║ ╚████║ ███████╗ ██║  ██║ ╚█████╔╝╚██████╔╝██║ ╚═╝ ██║██║██║ ╚████║
+       ╚═╝    ╚═╝  ╚═╝ ╚═╝  ╚═══╝ ╚══════╝ ╚═╝  ╚═╝  ╚════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
+");
     }
 
     protected function setupEnvironment()
     {
         $this->info("\n🛠  Environment Setup");
-
+    
+        // Create fresh .env from example
         if (!File::exists(base_path('.env'))) {
             File::copy(base_path('.env.example'), base_path('.env'));
         }
-
+    
         $this->updateEnvVariables([
             'APP_NAME' => $this->ask('Application Name', 'TanzaAdmin'),
             'APP_URL' => $this->ask('Application URL', 'http://localhost:8000'),
@@ -50,10 +51,37 @@ class InstallTanzaAdmin extends Command
             'DB_USERNAME' => $this->ask('Database User', 'root'),
             'DB_PASSWORD' => $this->secret('Database Password'),
         ]);
-
-        Artisan::call('config:clear');
-        sleep(2); // Allow time for config refresh
+    
+        // Reload environment properly
+        $this->reloadEnvironment();
     }
+
+    protected function reloadEnvironment()
+{
+    // Clear cached config
+    Artisan::call('config:clear');
+    
+    // Reload .env manually
+    (new \Dotenv\Dotenv(base_path()))->overload();
+    
+    // Verify environment variables
+    $this->info("\n🔍 Verifying environment variables:");
+    $this->table(
+        ['Key', 'Value'],
+        [
+            ['DB_HOST', env('DB_HOST')],
+            ['DB_PORT', env('DB_PORT')],
+            ['DB_DATABASE', env('DB_DATABASE')],
+            ['DB_USERNAME', env('DB_USERNAME')],
+            ['DB_PASSWORD', str_repeat('*', strlen(env('DB_PASSWORD')))],
+        ]
+    );
+
+    if (empty(env('DB_USERNAME')) || empty(env('DB_DATABASE'))) {
+        $this->error('❌ Database configuration is incomplete!');
+        exit(1);
+    }
+}
 
     protected function updateEnvVariables(array $variables)
     {
@@ -189,4 +217,6 @@ class InstallTanzaAdmin extends Command
             exit(1);
         }
     }
+
+    
 }
