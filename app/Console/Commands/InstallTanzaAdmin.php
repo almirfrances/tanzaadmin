@@ -2,10 +2,11 @@
 
 namespace App\Console\Commands;
 
+use Dotenv\Dotenv;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Artisan;
 
 class InstallTanzaAdmin extends Command
 {
@@ -57,31 +58,31 @@ class InstallTanzaAdmin extends Command
     }
 
     protected function reloadEnvironment()
-{
-    // Clear cached config
-    Artisan::call('config:clear');
+    {
+        // Clear cached config
+        Artisan::call('config:clear');
+        
+        // Reload .env manually
+        Dotenv::createImmutable(base_path())->safeLoad();
+        
+        // Verify environment variables
+        $this->info("\n🔍 Verifying environment variables:");
+        $this->table(
+            ['Key', 'Value'],
+            [
+                ['DB_HOST', env('DB_HOST')],
+                ['DB_PORT', env('DB_PORT')],
+                ['DB_DATABASE', env('DB_DATABASE')],
+                ['DB_USERNAME', env('DB_USERNAME')],
+                ['DB_PASSWORD', str_repeat('*', strlen(env('DB_PASSWORD')))],
+            ]
+        );
     
-    // Reload .env manually
-    (new \Dotenv\Dotenv(base_path()))->overload();
-    
-    // Verify environment variables
-    $this->info("\n🔍 Verifying environment variables:");
-    $this->table(
-        ['Key', 'Value'],
-        [
-            ['DB_HOST', env('DB_HOST')],
-            ['DB_PORT', env('DB_PORT')],
-            ['DB_DATABASE', env('DB_DATABASE')],
-            ['DB_USERNAME', env('DB_USERNAME')],
-            ['DB_PASSWORD', str_repeat('*', strlen(env('DB_PASSWORD')))],
-        ]
-    );
-
-    if (empty(env('DB_USERNAME')) || empty(env('DB_DATABASE'))) {
-        $this->error('❌ Database configuration is incomplete!');
-        exit(1);
+        if (empty(env('DB_USERNAME')) || empty(env('DB_DATABASE'))) {
+            $this->error('❌ Database configuration is incomplete!');
+            exit(1);
+        }
     }
-}
 
     protected function updateEnvVariables(array $variables)
     {
