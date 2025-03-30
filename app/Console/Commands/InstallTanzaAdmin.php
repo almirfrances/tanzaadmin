@@ -61,15 +61,10 @@ class InstallTanzaAdmin extends Command
     {
         Artisan::call('config:clear');
         
-        // Clear loaded environment
-        (new \Dotenv\Dotenv(
-            \Dotenv\Repository\RepositoryBuilder::createWithNoAdapters()
-                ->addAdapter(\Dotenv\Repository\Adapter\EnvConstAdapter::class)
-                ->addWriter(\Dotenv\Repository\Adapter\PutenvAdapter::class)
-                ->immutable()
-                ->make()
-        ))->load(base_path('.env'));
-    
+        // Reload environment using the proper Dotenv initialization
+        $dotenv = Dotenv::createImmutable(base_path());
+        $dotenv->safeLoad();
+        
         // Verify using getenv() instead of env()
         $this->info("\n🔍 Verifying environment variables:");
         $this->table(
