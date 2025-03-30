@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 30, 2025 at 11:04 AM
+-- Generation Time: Mar 30, 2025 at 11:27 AM
 -- Server version: 11.8.1-MariaDB-2
 -- PHP Version: 8.4.4
 
@@ -737,7 +737,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('9BDgPE51eLUVm0kFiZxYVWNU0MZZtmDKwlFAYh6w', NULL, '10.244.235.25', 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoic3lKanlRdXZYcHN6T1hlbGJGdkdGZ0xuZG5iSEtIS1I3MWpNa1ZqSSI7czoxODoiZmxhc2hlcjo6ZW52ZWxvcGVzIjthOjA6e31zOjk6Il9wcmV2aW91cyI7YToxOntzOjM6InVybCI7czo1OToiaHR0cDovLzEwLjI0NC4yMzUuMjU6ODAwMC9hbG1pci9zZXR0aW5ncy9lbWFpbC9xdWV1ZS1zdGF0dXMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUyOiJsb2dpbl9hZG1pbl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1743330729),
+('9BDgPE51eLUVm0kFiZxYVWNU0MZZtmDKwlFAYh6w', NULL, '10.244.235.25', 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoic3lKanlRdXZYcHN6T1hlbGJGdkdGZ0xuZG5iSEtIS1I3MWpNa1ZqSSI7czoxODoiZmxhc2hlcjo6ZW52ZWxvcGVzIjthOjA6e31zOjk6Il9wcmV2aW91cyI7YToxOntzOjM6InVybCI7czo4NToiaHR0cDovLzEwLjI0NC4yMzUuMjU6ODAwMC9hc3NldHMvdmVuZG9yL2xpYnMvZGF0YXRhYmxlcy1iczUvZGF0YXRhYmxlcy1ib290c3RyYXA1LmNzcyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTI6ImxvZ2luX2FkbWluXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1743334034),
 ('YVUC5brq3j8zgkDZcrnyA8yE6ip1eACNPhYK3W46', NULL, '10.244.59.126', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoielVjMzNLVThwUkthZkV5ZXdBN05KSUpmY2pyam1jaWlIdnBDc1lnYSI7czoxODoiZmxhc2hlcjo6ZW52ZWxvcGVzIjthOjA6e31zOjk6Il9wcmV2aW91cyI7YToxOntzOjM6InVybCI7czo4NToiaHR0cDovLzEwLjI0NC4yMzUuMjU6ODAwMC9hc3NldHMvdmVuZG9yL2xpYnMvZGF0YXRhYmxlcy1iczUvZGF0YXRhYmxlcy1ib290c3RyYXA1LmNzcyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1743325401);
 
 -- --------------------------------------------------------
@@ -813,10 +813,10 @@ CREATE TABLE `social_logins` (
 --
 
 INSERT INTO `social_logins` (`id`, `provider`, `client_id`, `client_secret`, `redirect_url`, `status`, `created_at`, `updated_at`) VALUES
-(5, 'google', '895097760917-0pf68ikpuha3h24349bulcvlisbbg08o.apps.googleusercontent.com', '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', 'https://0218-197-186-8-190.ngrok-free.app/social-login/google/callback', 1, '2025-01-16 07:29:44', '2025-01-16 08:01:43'),
-(6, 'facebook', 'your-facebook-client-id', 'your-facebook-client-secret', 'http://192.168.1.166:8000/social-login/facebook/callback', 1, '2025-01-16 07:29:44', '2025-01-16 07:52:00'),
-(7, 'github', 'your-github-client-id', 'your-github-client-secret', 'http://192.168.1.166:8000/social-login/github/callback', 1, '2025-01-16 07:29:44', '2025-01-16 07:29:44'),
-(8, 'twitter', 'your-twitter-client-id', 'your-twitter-client-secret', 'http://192.168.1.166:8000/social-login/twitter/callback', 1, '2025-01-16 07:29:44', '2025-01-16 07:52:18');
+(5, 'google', 'your-google-client-id', 'your-google-secret', 'http://10.244.235.25:8000/social-login/google/callback', 1, '2025-01-16 07:29:44', '2025-03-30 15:27:14'),
+(6, 'facebook', 'your-facebook-client-id', 'your-facebook-client-secret', 'http://10.244.235.25:8000/social-login/facebook/callback', 1, '2025-01-16 07:29:44', '2025-03-30 15:27:14'),
+(7, 'github', 'your-github-client-id', 'your-github-client-secret', 'http://10.244.235.25:8000/social-login/github/callback', 1, '2025-01-16 07:29:44', '2025-03-30 15:27:14'),
+(8, 'twitter', 'your-twitter-client-id', 'your-twitter-client-secret', 'http://10.244.235.25:8000/social-login/twitter/callback', 1, '2025-01-16 07:29:44', '2025-03-30 15:27:14');
 
 -- --------------------------------------------------------
 

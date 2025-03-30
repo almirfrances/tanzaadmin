@@ -46,8 +46,8 @@ class InstallTanzaAdmin extends Command
         // Clear config cache to apply new DB settings
         Artisan::call('config:clear');
 
-        // Import database.sql dump
-        $sqlFile = public_path('database.sql');
+        // Import tanzaadmin.sql dump
+        $sqlFile = public_path('tanzaadmin.sql');
         if (File::exists($sqlFile)) {
             $this->info('Importing database...');
             $command = "mysql -h {$dbHost} -u {$dbUser} " . ($dbPass ? "-p{$dbPass} " : "") . "{$dbName} < {$sqlFile}";
