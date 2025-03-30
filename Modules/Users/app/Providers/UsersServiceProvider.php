@@ -7,6 +7,7 @@ use RecursiveDirectoryIterator;
 use Illuminate\Support\Facades\Blade;
 use Modules\Users\Models\SocialLogin;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Nwidart\Modules\Traits\PathNamespace;
 
@@ -30,6 +31,37 @@ class UsersServiceProvider extends ServiceProvider
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
 
+                    // Skip if database isn't configured
+        if (!$this->isDatabaseReady()) {
+            return;
+        }
+
+        try {
+            $this->configureSocialLogins();
+        } catch (\Exception $e) {
+            Log::error('Social login configuration failed: ' . $e->getMessage());
+        }
+    }
+
+
+    protected function isDatabaseReady(): bool
+    {
+        // Check database configuration
+        if (empty(env('DB_DATABASE')) || empty(env('DB_USERNAME'))) {
+            return false;
+        }
+
+        // Check if table exists
+        try {
+            DB::connection()->getPdo();
+            return Schema::hasTable('social_logins');
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    protected function configureSocialLogins(): void
+    {
         $socialLogins = SocialLogin::where('status', 1)->get();
 
         foreach ($socialLogins as $login) {
