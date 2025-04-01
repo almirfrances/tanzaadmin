@@ -13,7 +13,7 @@ Route::middleware([CheckMaintenanceMode::class])->group(function () {
         // Dynamic route: show page by its slug
         $adminPrefix = config('admin.route_prefix', 'admin');
 
-        $regex = '^(?!login$|register$|forgot-password$|user.*$|'.$adminPrefix.'.*$|almir.*$).*';
+        $regex = '^(?!login$|register$|forgot-password$|user.*$|social-login.*|'.$adminPrefix.'.*$|almir.*$).*';
 
         // Catch-all dynamic route for frontend pages.
         Route::get('/{slug}', [FrontPageController::class, 'show'])

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedBigInteger('page_id');
             $table->string('section_key'); // e.g., "homebanner1", "services", etc.
             $table->integer('position')->default(0);
-            $table->json('content')->nullable();
             $table->timestamps();
 
             $table->foreign('page_id')->references('id')->on('pages')->onDelete('cascade');

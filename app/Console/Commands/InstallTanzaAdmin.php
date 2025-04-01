@@ -25,24 +25,27 @@ class InstallTanzaAdmin extends Command
     protected function showHeader()
     {
         $this->info("
-    ████████╗  █████╗  ███╗  ██╗ ███████╗  █████╗   █████╗  ██████╗ ███╗   ███╗██╗███╗   ██╗
-    ╚══██╔══╝ ██╔══██╗ ████╗ ██║ ╚══███╔╝ ██╔══██╗ ██╔══██╗██╔════╝ ████╗ ████║██║████╗  ██║
-       ██║    ███████║ ██╔██╗██║   ███╔╝  ███████║ ██║  ██║██║  ███╗██╔████╔██║██║██╔██╗ ██║
-       ██║    ██╔══██║ ██║╚██╗██║  ███╔╝   ██╔══██║ ██║  ██║██║   ██║██║╚██╔╝██║██║██║╚██╗██║
-       ██║    ██║  ██║ ██║ ╚████║ ███████╗ ██║  ██║ ╚█████╔╝╚██████╔╝██║ ╚═╝ ██║██║██║ ╚████║
-       ╚═╝    ╚═╝  ╚═╝ ╚═╝  ╚═══╝ ╚══════╝ ╚═╝  ╚═╝  ╚════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
+
+        ████████╗ █████╗ ███╗   ██╗███████╗ █████╗      █████╗ ██████╗ ███╗   ███╗██╗███╗   ██╗
+        ╚══██╔══╝██╔══██╗████╗  ██║╚══███╔╝██╔══██╗    ██╔══██╗██╔══██╗████╗ ████║██║████╗  ██║
+           ██║   ███████║██╔██╗ ██║  ███╔╝ ███████║    ███████║██║  ██║██╔████╔██║██║██╔██╗ ██║
+           ██║   ██╔══██║██║╚██╗██║ ███╔╝  ██╔══██║    ██╔══██║██║  ██║██║╚██╔╝██║██║██║╚██╗██║
+           ██║   ██║  ██║██║ ╚████║███████╗██║  ██║    ██║  ██║██████╔╝██║ ╚═╝ ██║██║██║ ╚████║
+           ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝
+
+
 ");
     }
 
     protected function setupEnvironment()
     {
         $this->info("\n🛠  Environment Setup");
-    
+
         // Create fresh .env from example
         if (!File::exists(base_path('.env'))) {
             File::copy(base_path('.env.example'), base_path('.env'));
         }
-    
+
         $this->updateEnvVariables([
             'APP_NAME' => $this->ask('Application Name', 'TanzaAdmin'),
             'APP_URL' => $this->ask('Application URL', 'http://localhost:8000'),
@@ -52,7 +55,7 @@ class InstallTanzaAdmin extends Command
             'DB_USERNAME' => $this->ask('Database User', 'root'),
             'DB_PASSWORD' => $this->secret('Database Password'),
         ]);
-    
+
         // Reload environment properly
         $this->reloadEnvironment();
     }
@@ -60,11 +63,11 @@ class InstallTanzaAdmin extends Command
     protected function reloadEnvironment()
     {
         Artisan::call('config:clear');
-        
+
         // Reload environment using the proper Dotenv initialization
         $dotenv = Dotenv::createImmutable(base_path());
         $dotenv->safeLoad();
-        
+
         // Verify using getenv() instead of env()
         $this->info("\n🔍 Verifying environment variables:");
         $this->table(
@@ -77,7 +80,7 @@ class InstallTanzaAdmin extends Command
                 ['DB_PASSWORD', str_repeat('*', strlen(getenv('DB_PASSWORD') ?? ''))],
             ]
         );
-    
+
         if (empty(getenv('DB_USERNAME')) || empty(getenv('DB_DATABASE'))) {
             $this->error('❌ Database configuration is incomplete!');
             exit(1);
@@ -88,11 +91,11 @@ class InstallTanzaAdmin extends Command
     {
         $envPath = base_path('.env');
         $envContent = File::exists($envPath) ? File::get($envPath) : File::get(base_path('.env.example'));
-    
+
         foreach ($variables as $key => $value) {
             $value = $this->formatEnvValue($value);
             $pattern = "/^{$key}=.*/m";
-            
+
             if (preg_match($pattern, $envContent)) {
                 // Replace existing value
                 $envContent = preg_replace($pattern, "{$key}={$value}", $envContent);
@@ -101,11 +104,11 @@ class InstallTanzaAdmin extends Command
                 $envContent .= "\n{$key}={$value}";
             }
         }
-    
+
         File::put($envPath, $envContent);
         $this->info('✅ Environment variables updated');
     }
-    
+
     protected function formatEnvValue($value)
     {
         if ($value === null || $value === '') {
@@ -129,7 +132,7 @@ class InstallTanzaAdmin extends Command
     protected function configureDatabase()
     {
         $this->info("\n🔐 Database Configuration");
-        
+
         try {
             DB::connection()->getPdo();
             $this->info('✅ Database connection verified');
@@ -164,7 +167,7 @@ class InstallTanzaAdmin extends Command
     protected function importSqlDump()
     {
         $sqlFile = public_path('tanzaadmin.sql');
-        
+
         if (!File::exists($sqlFile)) {
             $this->error('❌ tanzaadmin.sql file not found!');
             return;
@@ -195,7 +198,7 @@ class InstallTanzaAdmin extends Command
     protected function finalizeInstallation()
     {
         $this->info("\n🎉 Finalizing Installation");
-        
+
         Artisan::call('key:generate --force');
         Artisan::call('storage:link');
         Artisan::call('optimize:clear');
@@ -218,9 +221,9 @@ class InstallTanzaAdmin extends Command
     {
         $output = [];
         $status = null;
-        
+
         exec($command, $output, $status);
-        
+
         if ($status !== 0) {
             $this->error('❌ Command failed: ' . $command);
             $this->line(implode("\n", $output));
@@ -228,5 +231,5 @@ class InstallTanzaAdmin extends Command
         }
     }
 
-    
+
 }

@@ -17,5 +17,24 @@
             "description": "textarea",
             "image": "image"
         }
+    },
+
+    "whyus": {
+        "crud": false,
+        "name": "Why Us Section",
+        "content": {
+            "title": "text",
+            "description": "textarea"
+        }
+    },
+
+    "ourproject": {
+        "crud": true,
+        "name": "Project Section",
+        "content": {
+            "name": "text",
+            "description": "textarea",
+            "image":"image"
+        }
     }
 }
