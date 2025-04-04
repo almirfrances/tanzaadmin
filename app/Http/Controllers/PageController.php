@@ -10,9 +10,24 @@ class PageController extends Controller
         /**
      * Display the homepage.
      */
-    public function home()
+    // public function home()
+    // {
+    //     $page = Page::where('is_closed', true)->first();
+
+    //     if (!$page) {
+    //         abort(404, 'Homepage not found');
+    //     }
+
+    //     return view('frontend.home', compact('page'));
+    // }
+
+        public function home()
     {
-        $page = Page::where('is_closed', true)->first();
+        $page = Page::where('is_closed', true)
+            ->with(['sections' => function($query) {
+                $query->orderBy('position');
+            }])
+            ->first();
 
         if (!$page) {
             abort(404, 'Homepage not found');

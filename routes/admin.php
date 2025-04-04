@@ -34,7 +34,7 @@ Route::post('/logout', [AdminLoginController::class, 'logout'])->name('logout');
         ->name('update-password');
 
 Route::middleware([AuthenticateAdmin::class])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::prefix('/profile')->name('profile.')->group(function () {
         Route::get('/account', [AdminProfileController::class, 'view'])->name('account.view');
         Route::put('/account', [AdminProfileController::class, 'update'])->name('account.update');
