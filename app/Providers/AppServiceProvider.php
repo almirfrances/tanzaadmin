@@ -24,14 +24,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register services here if needed
+        
+     // register some services here
     }
+    
 
     /**
      * Bootstrap any application services.
      */
     public function boot()
     {
+        // Ensuring settings are loaded first
+        if (AdminModule::where('name', 'Settings')->where('status', 1)->exists()) {
+            $this->loadAndShareSettings();
+        }
+
         // Skip database operations if .env is not configured
         if (!$this->isDatabaseConfigured()) {
             Log::warning('Database configuration is incomplete. Skipping database checks.');
@@ -42,20 +49,18 @@ class AppServiceProvider extends ServiceProvider
             // Check database connection and settings module
             DB::connection()->getPdo(); // Actively check connection
 
-            if (AdminModule::where('name', 'Settings')->where('status', 1)->exists()) {
-                $this->loadAndShareSettings();
-            }
-
             // Additional module checks
             $this->handleEmailService();
             $this->handleHttpsEnforcement();
-
+            
         } catch (\Exception $e) {
             Log::error('Database connection failed: ' . $e->getMessage());
         }
 
-        // Register Blade directives
+        // Registering custom Blade directives
         $this->registerBladeDirectives();
+
+
     }
 
     /**
@@ -75,10 +80,13 @@ class AppServiceProvider extends ServiceProvider
     {
         try {
             $settings = Setting::pluck('value', 'key')->toArray();
-            View::share('settings', $settings);
+            
+            Log::info('Shared settings:', $settings);   
         } catch (\Exception $e) {
             Log::error('Failed to load settings', ['error' => $e->getMessage()]);
         }
+
+        View::share('settings', $settings);
     }
 
     /**
@@ -107,9 +115,11 @@ class AppServiceProvider extends ServiceProvider
     protected function registerBladeDirectives(): void
     {
         Blade::directive('isModule', function ($moduleName) {
+            // Remove quotes if they exist
+            $moduleName = trim($moduleName, "'\"");
             return "<?php if (\\App\\Models\\AdminModule::isModuleEnabled('$moduleName')): ?>";
         });
-
+    
         Blade::directive('endisModule', function () {
             return "<?php endif; ?>";
         });
