@@ -24,8 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        
-     // register some services here
+        // Registering custom Blade directives
+        $this->registerBladeDirectives();
     }
     
 
@@ -56,10 +56,6 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Exception $e) {
             Log::error('Database connection failed: ' . $e->getMessage());
         }
-
-        // Registering custom Blade directives
-        $this->registerBladeDirectives();
-
 
     }
 
